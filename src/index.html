@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <p id="libraryRoot" class="library-root">Loading library...</p>
+
+        <label class="field">
+          <span>Album</span>
+          <select id="albumSelect"></select>
+        </label>
+
+        <label class="field">
+          <span>Song</span>
+          <select id="songSelect"></select>
+        </label>
+
+        <label class="toggle-field">
+          <input id="autoAdvanceToggle" type="checkbox" />
+          <span>Auto advance</span>
+        </label>
+
+        <label class="field">
+          <span>Muted stem</span>
+          <select id="muteSelect"></select>
+        </label>
+
+        <label class="field">
+          <span>Audio output</span>
+          <select id="outputSelect"></select>
+        </label>
+
+        <button id="refreshOutputsButton" class="secondary-button" type="button">Refresh Outputs</button>
+
+        <button id="refreshButton" class="secondary-button" type="button">Refresh Library</button>
+      </aside>
+
+      <section class="player">
+        <header class="song-header">
+          <div>
+            <p id="albumName" class="eyebrow">Choose a song</p>
+            <h2 id="songTitle">No track loaded</h2>
+          </div>
+          <div id="syncStatus" class="sync-status">Ready</div>
+        </header>
+
+        <section class="transport">
+          <button id="restartButton" class="icon-button" type="button" title="Start over">↺</button>
+          <button id="playButton" class="play-button" type="button">Play</button>
+          <div class="time-readout">
+            <span id="currentTime">0:00</span>
+            <span>/</span>
+            <span id="duration">0:00</span>
+          </div>
+          <label class="volume-control">
+            <span>Volume</span>
+            <input id="volumeSlider" type="range" min="0" max="150" value="95" />
+            <strong id="volumeValue">95%</strong>
+          </label>
+        </section>
+
+        <section class="waveform-wrap">
+          <canvas id="waveformCanvas"></canvas>
+          <input id="seekSlider" class="seek-slider" type="range" min="0" max="1000" value="0" />
+        </section>
+      </section>
+    </main>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>
