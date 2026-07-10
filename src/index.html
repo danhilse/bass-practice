@@ -3,74 +3,198 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title></title>
+    <title>Stem Deck</title>
+    <link rel="stylesheet" href="../node_modules/@phosphor-icons/web/src/regular/style.css" />
+    <link rel="stylesheet" href="../node_modules/@phosphor-icons/web/src/fill/style.css" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <main class="app-shell">
-      <aside class="sidebar">
-        <p id="libraryRoot" class="library-root">Loading library...</p>
+      <header class="app-header">
+        <div class="track-identity">
+          <div>
+            <p id="albumName" class="eyebrow">Choose a song</p>
+            <h1 id="songTitle">No track loaded</h1>
+          </div>
+          <button id="notesButton" class="notes-button" type="button" aria-label="Track notes" title="Track notes" disabled>
+            <i class="ph ph-note-pencil" aria-hidden="true"></i>
+            <span id="notesIndicator" aria-hidden="true"></span>
+          </button>
+          <button id="chordsButton" class="chords-button" type="button" aria-label="Show chords from Ultimate Guitar" title="Show chords from Ultimate Guitar" aria-pressed="false" disabled>
+            <i class="ph ph-guitar" aria-hidden="true"></i>
+          </button>
+        </div>
 
-        <label class="field">
-          <span>Album</span>
-          <select id="albumSelect"></select>
-        </label>
+        <div class="header-actions">
+          <button id="libraryButton" class="header-button" type="button" aria-expanded="false" aria-controls="libraryDrawer">
+            <i class="ph ph-folder-simple" aria-hidden="true"></i>
+            <span>Library</span>
+          </button>
+          <button id="settingsButton" class="header-button quiet" type="button">
+            <i class="ph ph-speaker-high" aria-hidden="true"></i>
+            <span>Audio</span>
+            <i class="ph ph-caret-down" aria-hidden="true"></i>
+          </button>
+          <div id="syncStatus" class="sync-status"><span aria-hidden="true"></span>Ready</div>
+        </div>
+      </header>
 
-        <label class="field">
-          <span>Song</span>
-          <select id="songSelect"></select>
-        </label>
-
-        <label class="toggle-field">
-          <input id="autoAdvanceToggle" type="checkbox" />
+      <section class="practice-bar" aria-label="Practice options">
+        <label class="switch-field">
           <span>Auto advance</span>
+          <input id="autoAdvanceToggle" type="checkbox" />
+          <span class="switch" aria-hidden="true"></span>
         </label>
-
-        <label class="field">
-          <span>Muted stem</span>
-          <select id="muteSelect"></select>
+        <label class="next-mode-field">
+          <span>Next</span>
+          <select id="nextModeSelect">
+            <option value="sequential">In order</option>
+            <option value="album">Shuffle album</option>
+            <option value="library">Shuffle library</option>
+          </select>
         </label>
+      </section>
 
+      <section class="waveform-wrap" aria-label="Track waveforms">
+        <canvas id="waveformCanvas"></canvas>
+        <input id="seekSlider" class="seek-slider" type="range" min="0" max="1000" value="0" aria-label="Seek through track" />
+        <div id="muteButtons" class="stem-buttons" role="radiogroup" aria-label="Muted stem"></div>
+        <select id="muteSelect" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+      </section>
+
+      <footer class="transport-bar">
+        <button id="restartButton" class="restart-button" type="button" title="Start over">
+          <i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i>
+          <span>Restart</span>
+        </button>
+        <button id="nextButton" class="restart-button" type="button" title="Next track" aria-label="Next track" disabled>
+          <span>Next</span>
+          <i class="ph ph-skip-forward" aria-hidden="true"></i>
+        </button>
+        <button id="playButton" class="play-button" type="button" aria-label="Play">
+          <i class="ph-fill ph-play" aria-hidden="true"></i>
+          <span class="visually-hidden">Play</span>
+        </button>
+        <div class="time-readout" aria-label="Playback time">
+          <strong id="currentTime">0:00</strong>
+          <span>/</span>
+          <span id="duration">0:00</span>
+        </div>
+        <label class="volume-control">
+          <i class="ph ph-speaker-high" aria-hidden="true"></i>
+          <span class="visually-hidden">Volume</span>
+          <input id="volumeSlider" type="range" min="0" max="150" value="95" />
+          <strong id="volumeValue">95%</strong>
+        </label>
+      </footer>
+
+      <div id="drawerScrim" class="drawer-scrim" hidden></div>
+      <aside id="libraryDrawer" class="library-drawer" aria-hidden="true" aria-label="Library">
+        <header class="drawer-header">
+          <h2>Library</h2>
+          <button id="closeLibraryButton" class="icon-only-button" type="button" aria-label="Close library">
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
+        </header>
+
+        <div class="drawer-content">
+          <section class="library-tools" aria-label="Library management">
+            <div class="library-location-summary">
+              <i class="ph ph-folder-simple" aria-hidden="true"></i>
+              <div>
+                <span>Current library</span>
+                <p id="libraryRoot">Loading library...</p>
+              </div>
+              <button id="changeFolderButton" class="tool-icon-button" type="button" aria-label="Change library location" title="Change library location">
+                <i class="ph ph-folder-open" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div class="library-actions">
+              <button id="importFolderButton" class="secondary-button import-button" type="button">
+                <i class="ph ph-waveform" aria-hidden="true"></i>
+                Separate new folder
+              </button>
+              <button id="refreshButton" class="tool-icon-button" type="button" aria-label="Refresh library" title="Refresh library">
+                <i class="ph ph-arrows-clockwise" aria-hidden="true"></i>
+              </button>
+            </div>
+            <p id="importStatus" class="import-status" hidden aria-live="polite"></p>
+          </section>
+          <label class="field">
+            <span>Album</span>
+            <select id="albumSelect"></select>
+          </label>
+
+          <div class="song-list-section">
+            <p class="field-label">Songs</p>
+            <div id="songList" class="song-list" role="listbox" aria-label="Songs"></div>
+            <select id="songSelect" class="visually-hidden" aria-hidden="true" tabindex="-1"></select>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <dialog id="settingsDialog" class="settings-dialog">
+      <form method="dialog" class="settings-panel">
+        <header>
+          <div>
+            <p class="eyebrow">Audio</p>
+            <h2>Audio routing</h2>
+          </div>
+          <button id="closeSettingsButton" class="icon-only-button" value="close" type="submit" aria-label="Close audio routing settings">
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
+        </header>
         <label class="field">
           <span>Audio output</span>
           <select id="outputSelect"></select>
         </label>
+        <label class="field">
+          <span>Output channels</span>
+          <select id="outputChannelSelect">
+            <option value="stereo">1 + 2 (stereo)</option>
+            <option value="1">1 (mono)</option>
+            <option value="2">2 (mono)</option>
+          </select>
+        </label>
+        <div class="settings-divider"></div>
+        <label class="field">
+          <span>Monitor input</span>
+          <select id="inputSelect">
+            <option value="off">Off</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Input channel</span>
+          <select id="inputChannelSelect" disabled>
+            <option value="0">Channel 1</option>
+          </select>
+        </label>
+        <p id="inputHelp" class="field-help">Input monitoring is off.</p>
+        <button id="refreshOutputsButton" class="secondary-button" type="button">
+          <i class="ph ph-arrows-clockwise" aria-hidden="true"></i>
+          Refresh devices
+        </button>
+      </form>
+    </dialog>
 
-        <button id="refreshOutputsButton" class="secondary-button" type="button">Refresh Outputs</button>
-
-        <button id="refreshButton" class="secondary-button" type="button">Refresh Library</button>
-      </aside>
-
-      <section class="player">
-        <header class="song-header">
+    <dialog id="notesDialog" class="notes-dialog">
+      <section class="notes-panel">
+        <header>
           <div>
-            <p id="albumName" class="eyebrow">Choose a song</p>
-            <h2 id="songTitle">No track loaded</h2>
+            <p class="eyebrow">Track notes</p>
+            <h2 id="notesTitle">Notes</h2>
           </div>
-          <div id="syncStatus" class="sync-status">Ready</div>
+          <button id="closeNotesButton" class="icon-only-button" type="button" aria-label="Close track notes">
+            <i class="ph ph-x" aria-hidden="true"></i>
+          </button>
         </header>
-
-        <section class="transport">
-          <button id="restartButton" class="icon-button" type="button" title="Start over">↺</button>
-          <button id="playButton" class="play-button" type="button">Play</button>
-          <div class="time-readout">
-            <span id="currentTime">0:00</span>
-            <span>/</span>
-            <span id="duration">0:00</span>
-          </div>
-          <label class="volume-control">
-            <span>Volume</span>
-            <input id="volumeSlider" type="range" min="0" max="150" value="95" />
-            <strong id="volumeValue">95%</strong>
-          </label>
-        </section>
-
-        <section class="waveform-wrap">
-          <canvas id="waveformCanvas"></canvas>
-          <input id="seekSlider" class="seek-slider" type="range" min="0" max="1000" value="0" />
-        </section>
+        <textarea id="notesEditor" aria-label="Track notes" placeholder="Key, chords, fingerings, things to remember…" spellcheck="true"></textarea>
+        <footer>
+          <span id="notesSaveStatus">Saved as notes.md in this track’s folder</span>
+        </footer>
       </section>
-    </main>
+    </dialog>
 
     <script src="./renderer.js"></script>
   </body>
