@@ -65,7 +65,7 @@ const els = {
   autoAdvanceToggle: document.querySelector("#autoAdvanceToggle"),
   nextModeSelect: document.querySelector("#nextModeSelect"),
   muteSelect: document.querySelector("#muteSelect"),
-  muteButtons: document.querySelector("#muteButtons"),
+  trackPanel: document.querySelector("#trackPanel"),
   settingsButton: document.querySelector("#settingsButton"),
   settingsDialog: document.querySelector("#settingsDialog"),
   closeSettingsButton: document.querySelector("#closeSettingsButton"),
@@ -149,31 +149,30 @@ function renderSongList(songs) {
   }
 }
 
-function renderMuteButtons(stemNames) {
-  els.muteButtons.innerHTML = "";
-  els.muteButtons.style.setProperty("--stem-count", Math.max(1, stemNames.length));
-  for (const stem of stemNames) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "stem-button";
-    button.dataset.stemIndex = stemNames.indexOf(stem);
-    button.style.setProperty("--stem-color", colors[stem] || "#c3cad7");
-    button.setAttribute("role", "radio");
-    button.setAttribute("aria-checked", String(stem === state.mutedStem));
-    button.setAttribute("aria-label", `Mute ${stem}`);
-    const icon = stem === state.mutedStem ? "ph-speaker-slash" : "ph-speaker-simple-low";
-    button.innerHTML = `<i class="ph ${icon}" aria-hidden="true"></i><span></span>`;
-    button.querySelector("span").textContent = stem;
-    button.addEventListener("click", () => {
+function renderTrackPanel(stemNames) {
+  els.trackPanel.innerHTML = "";
+  els.trackPanel.style.setProperty("--stem-count", Math.max(1, stemNames.length));
+  for (const [index, stem] of stemNames.entries()) {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "track-row";
+    row.dataset.stemIndex = index;
+    row.style.setProperty("--stem-color", colors[stem] || "#c3cad7");
+    row.setAttribute("role", "radio");
+    row.setAttribute("aria-checked", String(stem === state.mutedStem));
+    row.setAttribute("aria-label", `Mute ${stem}`);
+    const isMuted = stem === state.mutedStem;
+    row.innerHTML = `<div class="track-row-content"><span class="track-label">${stem}</span><i class="ph ${isMuted ? "ph-speaker-slash" : "ph-speaker-simple-low"} track-icon" aria-hidden="true"></i></div>`;
+    row.addEventListener("click", () => {
       state.mutedStem = stem;
       els.muteSelect.value = stem;
-      renderMuteButtons(stemNames);
+      renderTrackPanel(stemNames);
       setTrackVolumes();
       setStatus(`${stem} muted`);
       drawWaveform();
       savePersistentState();
     });
-    els.muteButtons.appendChild(button);
+    els.trackPanel.appendChild(row);
   }
 }
 
@@ -183,13 +182,13 @@ function setHoveredMuteLane(clientY) {
 
   const bounds = els.waveformWrap.getBoundingClientRect();
   const laneIndex = Math.min(stemCount - 1, Math.max(0, Math.floor(((clientY - bounds.top) / bounds.height) * stemCount)));
-  els.muteButtons.querySelectorAll(".stem-button").forEach((button) => {
-    button.classList.toggle("is-lane-hover", Number(button.dataset.stemIndex) === laneIndex);
+  els.trackPanel.querySelectorAll(".track-row").forEach((row, i) => {
+    row.classList.toggle("is-lane-hover", i === laneIndex);
   });
 }
 
 function clearHoveredMuteLane() {
-  els.muteButtons.querySelectorAll(".stem-button").forEach((button) => button.classList.remove("is-lane-hover"));
+  els.trackPanel.querySelectorAll(".track-row").forEach((row) => row.classList.remove("is-lane-hover"));
 }
 
 function songsForAlbum(album) {
@@ -197,6 +196,7 @@ function songsForAlbum(album) {
 }
 
 function setStatus(text) {
+  els.syncStatus.dataset.status = text;
   els.syncStatus.textContent = text;
 }
 
@@ -730,7 +730,7 @@ async function loadSong(songId) {
   fillSelect(els.muteSelect, stemNames);
   els.muteSelect.value = stemNames.includes(state.mutedStem) ? state.mutedStem : stemNames[0];
   state.mutedStem = els.muteSelect.value;
-  renderMuteButtons(stemNames);
+  renderTrackPanel(stemNames);
   renderSongList(songsForAlbum(song.album));
 
   drawWaveform();

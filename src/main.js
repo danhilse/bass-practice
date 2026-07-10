@@ -171,8 +171,13 @@ async function findStemDirs(dirPath, depth = 0) {
 
 function stemNameFromFile(fileName) {
   const baseName = path.basename(fileName, path.extname(fileName));
-  const firstPart = baseName.split(" - ")[0].trim().toLowerCase();
-  return firstPart || baseName.toLowerCase();
+  const parts = baseName.split(" - ").map((p) => p.trim().toLowerCase());
+  // Demucs/demuc format: "SongTitle - stem - SongTitle" → stem is at index 1
+  // Simple format: "stem" or "stem.wav" → stem is at index 0
+  if (parts.length >= 3) return parts[1] || parts[0];
+  // Two-part: pick the shorter segment (stem names are shorter than song titles)
+  if (parts.length === 2) return parts[0].length <= parts[1].length ? parts[0] : parts[1];
+  return parts[0];
 }
 
 async function readStems(stemsDir) {
